@@ -1,0 +1,9 @@
+{
+	"name": "tired-format-attributes",
+	"version": "1.0.0",
+	"description": "A formatter for converting objects into an attribute string",
+	"main": "main.js",
+	"author": "ericbellamy",
+	"license": "No License",
+	"dependencies": {}
+}

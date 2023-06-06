@@ -1,0 +1,16 @@
+{
+	"name": "tired-file-processor",
+	"version": "1.0.0",
+	"description": "An file contents processor for the tiredcli",
+	"main": "main.js",
+	"author": "ericbellamy",
+	"license": "No License",
+	"dependencies": {
+		"node-html-parser": "^6.1.5",
+		"node-sass": "^9.0.0",
+		"terser-sync": "^0.1.1",
+		"tired-disk-cache": "file:../cache",
+		"tired-format-attributes": "file:../format-attributes",
+		"tired-markup": "file:../markup"
+	}
+}

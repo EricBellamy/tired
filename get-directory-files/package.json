@@ -1,0 +1,12 @@
+{
+	"name": "tired-get-directory-files",
+	"version": "1.0.0",
+	"description": "Colored console log for the tiredcli",
+	"main": "main.js",
+	"author": "ericbellamy",
+	"license": "No License",
+	"dependencies": {
+		"fs": "^0.0.1-security",
+		"path": "^0.12.7"
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"name": "tired-color-log",
+	"version": "1.0.0",
+	"description": "Colored console log for the tiredcli",
+	"main": "main.js",
+	"author": "ericbellamy",
+	"license": "No License",
+	"dependencies": {
+		"colors": "^1.4.0"
+	}
+}

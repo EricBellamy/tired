@@ -1,0 +1,11 @@
+{
+	"name": "tired-disk-cache",
+	"version": "1.0.0",
+	"description": "A cache that can also save to disk",
+	"main": "main.js",
+	"author": "ericbellamy",
+	"license": "No License",
+	"dependencies": {
+		"fs-extra": "^11.1.1"
+	}
+}

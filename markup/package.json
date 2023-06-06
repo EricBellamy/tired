@@ -1,0 +1,11 @@
+{
+	"name": "tired-markup",
+	"version": "1.0.0",
+	"description": "An HTML markup language for the tiredcli",
+	"main": "main.js",
+	"author": "ericbellamy",
+	"license": "No License",
+	"dependencies": {
+		"fs": "^0.0.1-security"
+	}
+}
