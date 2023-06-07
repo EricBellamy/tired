@@ -2,6 +2,7 @@ const processors = {
 	'html': require('./processors/html.js'),
 	'scss': require('./processors/scss.js'),
 	'js': require('./processors/js.js'),
+	'json': require('./processors/json.js'),
 	'jpg': require('./processors/picture.js'),
 	'png': require('./processors/picture.js'),
 };

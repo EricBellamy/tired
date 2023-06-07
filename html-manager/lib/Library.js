@@ -27,6 +27,7 @@ module.exports = class Library {
 	updateModified(filepath){
 		const modifiedTime = this.getUncachedModified(filepath);
 		modifiedCache.set(filepath, modifiedTime);
+		return modifiedTime;
 	}
 	add(filepath) {
 		const extname = path.extname(filepath).substring(1);
@@ -39,6 +40,8 @@ module.exports = class Library {
 		}
 		this.updateModified(filepath);
 		this.files[filepath] = new LibraryFile(filepath, extname, contents);
+
+		return this.files[filepath];
 	}
 	isLibraryFile(path){
 		return path.substring(0, this.directory.length) === this.directory;
