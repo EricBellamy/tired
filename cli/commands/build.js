@@ -84,16 +84,16 @@ async function buildFilepaths(filepaths) {
 	}
 }
 
-async function build(filepaths){
+async function build(filepaths) {
 	console.time("build");
 	await buildFilepaths(filepaths);
 	console.timeEnd("build");
 }
 
-function getHTMLPages(){
+function getHTMLPages() {
 	const rootFiles = getDirectoryFiles.byFileType(".", [".html"], false);
-	for(let a = 0; a < rootFiles.length; a++){
-		if(rootFiles[a].indexOf("./") === 0) rootFiles[a] = rootFiles[a].substring(2);
+	for (let a = 0; a < rootFiles.length; a++) {
+		if (rootFiles[a].indexOf("./") === 0) rootFiles[a] = rootFiles[a].substring(2);
 	}
 
 	return rootFiles.concat(getDirectoryFiles.byFileType("pages", [".html"]));
@@ -109,8 +109,33 @@ module.exports = async function () {
 // Only builds specified HTML files
 module.exports.targets = build;
 
-module.exports.fromIncludes = async function(filepaths){
-	// Take in an array of includes
-	// For each include, find the associated page files
-	// Create a list of unique page files to build
+module.exports.fromIncludes = async function (filepaths) {
+	let changedPagePaths = [];
+	const pagepaths = getHTMLPages();
+
+	for (const filepath of filepaths) {
+		if(pagepaths.indexOf(filepath) === -1){
+			htmlManager.library.updateModified(filepath);
+		}
+	}
+
+	for (const pagepath of pagepaths) {
+		if (filepaths.indexOf(pagepath) != -1) {
+			changedPagePaths.push(pagepath);
+			continue;
+		}
+
+		const includedFiles = includeCache.get(pagepath);
+		for (const filepath of filepaths) {
+			if (includedFiles[filepath] != undefined) {
+				changedPagePaths.push(pagepath);
+				continue;
+			}
+		}
+	}
+
+
+	if (0 < changedPagePaths.length) {
+		build(changedPagePaths);
+	}
 }

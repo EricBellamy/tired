@@ -8,8 +8,6 @@ let serverStatus = false;
 module.exports = async function (PORT_NUMBER) {
 	// Initialize watcher, runs build once on start
 	require('../lib/watch.js')(async function (changedFiles, callback) {
-		console.log(changedFiles);
-
 		// An empty array is the startup build, easiest to just call build
 		if(changedFiles.length === 0) await build();
 		else await build.fromIncludes(changedFiles);
