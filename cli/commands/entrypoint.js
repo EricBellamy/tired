@@ -19,16 +19,20 @@ if (global.tired_config.name === undefined) throw new Error('tired.json must spe
 async function handlecli(arguments) {
 	switch (arguments[0]) {
 		case "build":
+			process.env.target = "prod";
 			require('./build.js')();
 			break;
 		case "host":
+			process.env.target = "dev";
 			require('./host.js')(3000);
 			break;
 		case "deploy":
+			process.env.target = "prod";
 			await require('./deploy.js')();
 			break;
 		default:
 			if (arguments[0] != undefined) {
+				process.env.target = "dev";
 				const port = parseInt(arguments[0]);
 				if (!isNaN(port)) require('./host.js')(port);
 			}

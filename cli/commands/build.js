@@ -49,7 +49,7 @@ function buildFile(file, templateData, index, max) {
 
 	// Write the compiled file to dist
 	let distFilePath = file.path;
-	if(file.distPath != undefined) distFilePath = file.distPath;
+	if (file.distPath != undefined) distFilePath = file.distPath;
 	else if (file.path.indexOf("pages/") === 0) distFilePath = distFilePath.substring("pages/".length);
 	distFilePath = `.tired/dist/${distFilePath}`;
 	fs.ensureDirSync(path.dirname(distFilePath));
@@ -101,7 +101,7 @@ function getHTMLPages() {
 	return rootFiles.concat(getDirectoryFiles.byFileType("pages", [".html"]));
 }
 
-function loadTemplateInfo(){
+function loadTemplateInfo() {
 	let templates = {
 		filepaths: [],
 		modified: {},
@@ -151,14 +151,18 @@ function getTemplatePages(templateData) {
 		const templateKey = filepath.substring("templates/data".length + 1, filepath.lastIndexOf(".json"));
 		const relatedTemplateFile = templateFilesByKey[templateKey];
 
-		if(relatedTemplateFile === undefined) continue;
+		if (relatedTemplateFile === undefined) continue;
 
 		const modifiedData = templateData.modified[filepath];
 		const templateJSON = templateData.data[templateKey];
 
 		// If template HTML modified, rebuild all objects
 		if (relatedTemplateFile.modified) {
-			for (const page of templateJSON.pages) {
+			for (let a = 0; a < templateJSON.pages.length; a++) {
+				// Respect the development page limit for this JSON
+				if(templateJSON.limit != undefined && process.env.target != "prod" && a === templateJSON.limit) break;
+
+				const page = templateJSON.pages[a];
 				const cachekey = filepath + "-" + page.name; // template_path.html + object.name
 				const currentValue = hash.MD5(page); // hash.MD5(object.attributes)
 
@@ -175,7 +179,11 @@ function getTemplatePages(templateData) {
 
 		// Otherwise, check if data objects have been modified
 		if (modifiedData.old != modifiedData.new) {
-			for (const page of templateJSON.pages) {
+			for (let a = 0; a < templateJSON.pages.length; a++) {
+				// Respect the development page limit for this JSON
+				if(templateJSON.limit != undefined && process.env.target != "prod" && a === templateJSON.limit) break;
+
+				const page = templateJSON.pages[a];
 				const cachekey = filepath + "-" + page.name; // template_path.html + object.name
 				const currentValue = hash.MD5(page); // hash.MD5(object.attributes)
 
@@ -201,7 +209,7 @@ function getTemplatePages(templateData) {
 // Run a build where we look up all file paths in the repo and build them
 module.exports = async function () {
 	const templateInfo = loadTemplateInfo();
-	
+
 	// Get the HTML files
 	let filepaths = getHTMLPages();
 	for (let a = 0; a < filepaths.length; a++) {
@@ -219,10 +227,10 @@ module.exports = async function () {
 module.exports.targets = build;
 
 module.exports.fromIncludes = async function (filepaths) {
-	const templateData = loadTemplateInfo();
+	const templateInfo = loadTemplateInfo();
 
 	// Get template pages
-	const templatePages = getTemplatePages(templateData);
+	const templatePages = getTemplatePages(templateInfo);
 
 	let changedPagePaths = [];
 	const pagepaths = getHTMLPages();
@@ -253,6 +261,6 @@ module.exports.fromIncludes = async function (filepaths) {
 	// Build the changed paths
 	const allChangedPaths = changedPagePaths.concat(templatePages);
 	if (0 < allChangedPaths.length) {
-		build(allChangedPaths, templateData);
+		build(allChangedPaths, templateInfo.data);
 	}
 }
