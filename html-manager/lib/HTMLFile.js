@@ -19,9 +19,6 @@ module.exports = class HTMLFile {
 
 		fileProcessor.clearUsed();
 	}
-	loadInclude(attributes, library) {
-
-	}
 	// Load all of the <include> tags and their nested <include> tags recursively
 	loadNested(attributes, library) {
 		let includes = this.parsed.querySelectorAll("include");
@@ -39,6 +36,7 @@ module.exports = class HTMLFile {
 				// Compile the library file
 				const includeContents = requestedLibraryFile.compile(this.path, {
 					attr: include.attributes,
+					root: attributes.root,
 					template: attributes.template
 				}, library);
 

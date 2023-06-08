@@ -9,21 +9,13 @@ const BunnyCDN = require('../lib/bunnycdn.js');
 const uploadCommand = require('./upload.js');
 
 // Attempt to load the user config
-let userEnv = {};
-try {
-	userEnv = JSON.parse(fs.readFileSync('tired.json'));
-
-	if (userEnv.name === undefined) throw new Error('tired.json must specify a "name" object');
-	else if (userEnv.cdn === undefined) throw new Error('tired.json must specify a "cdn" object');
-	else if (userEnv.cdn.website === undefined) throw new Error('tired.json "cdn" must specify a "website" object');
-	else if (userEnv.cdn.website.username === undefined) throw new Error('tired.json "cdn.website" must specify a "username" string');
-	else if (userEnv.cdn.website.key === undefined) throw new Error('tired.json "cdn.website" must specify a "key" string');
-} catch (err) {
-	throw new Error(err);
-}
+if (global.tired_config.cdn === undefined) throw new Error('tired.json must specify a "cdn" object');
+else if (global.tired_config.cdn.website === undefined) throw new Error('tired.json "cdn" must specify a "website" object');
+else if (global.tired_config.cdn.website.username === undefined) throw new Error('tired.json "cdn.website" must specify a "username" string');
+else if (global.tired_config.cdn.website.key === undefined) throw new Error('tired.json "cdn.website" must specify a "key" string');
 
 const imageUploader = new BunnyCDN(env.cdn.image.key, env.cdn.image.username);
-const websiteUploader = new BunnyCDN(userEnv.cdn.website.key, userEnv.cdn.website.username);
+const websiteUploader = new BunnyCDN(global.tired_config.cdn.website.key, global.tired_config.cdn.website.username);
 
 const DIST_PATH = ".tired/dist";
 const uploadConcurrency = 5;
@@ -58,7 +50,7 @@ async function uploadHTMLPages() {
 		const filepath = distFilepaths[a];
 		const relativePath = filepath.substring(DIST_PATH.length + 1, filepath.lastIndexOf(".html"));
 		let bunnycdnPath;
-		if(relativePath === "index") bunnycdnPath = "index.html";
+		if (relativePath === "index") bunnycdnPath = "index.html";
 		else bunnycdnPath = relativePath + "/index.html";
 
 		// bunnyCache.remove(filepath);

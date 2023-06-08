@@ -35,7 +35,7 @@ function fileInStructureWasModified(filepath) {
 	return false;
 }
 
-function buildFile(file, index, max) {
+function buildFile(file, templateData, index, max) {
 	colorLog("host.js",
 		colorLog.normal(`[${index}/${max}] (`),
 		colorLog.normal2(colorLog.percentage(index, max)),
@@ -44,12 +44,8 @@ function buildFile(file, index, max) {
 		colorLog.normal2(file.path)
 	);
 	let fileData = file.data != undefined ? file.data : {};
-	let templateData = file.templateData != undefined ? file.templateData : {};
-	const loadedFile = htmlManager.loadFile(file.path, file.data, {
-		holiday: {
-			pages: []
-		}
-	});
+	// REMOVE THIS
+	const loadedFile = htmlManager.loadFile(file.path, file.data, templateData);
 
 	// Write the compiled file to dist
 	let distFilePath = file.path;
@@ -75,7 +71,7 @@ async function buildFilepaths(files, templateData) {
 		for (let a = 0; a < modifiedFileLen; a++) {
 			promises.push(new Promise(resolve => {
 				file = modifiedFiles[a];
-				buildFile(file, a + 1, modifiedFileLen);
+				buildFile(file, templateData, a + 1, modifiedFileLen);
 				resolve();
 			}));
 			// If last or concurrency limit
@@ -90,9 +86,9 @@ async function buildFilepaths(files, templateData) {
 	}
 }
 
-async function build(filepaths) {
+async function build(filepaths, templateData) {
 	console.time("build");
-	await buildFilepaths(filepaths);
+	await buildFilepaths(filepaths, templateData);
 	console.timeEnd("build");
 }
 
@@ -105,7 +101,35 @@ function getHTMLPages() {
 	return rootFiles.concat(getDirectoryFiles.byFileType("pages", [".html"]));
 }
 
-function getTemplatePages() {
+function loadTemplateInfo(){
+	let templates = {
+		filepaths: [],
+		modified: {},
+		data: {}
+	}
+	// If template data has changed, rebuild changed objects
+	const dataFiles = getDirectoryFiles.byFileType("templates/data", [".json"], false);
+	for (const filepath of dataFiles) {
+		templates.filepaths.push(filepath);
+
+		const templateKey = filepath.substring("templates/data".length + 1, filepath.lastIndexOf(".json"));
+
+		// Check if template data has been modified
+		const oldModified = modifiedCache.get(filepath);
+		const addedFile = htmlManager.library.add(filepath);
+		const newModified = modifiedCache.get(filepath);
+
+		templates.modified[filepath] = {
+			old: oldModified,
+			new: newModified
+		}
+		templates.data[templateKey] = addedFile.contents;
+	}
+
+	return templates;
+}
+
+function getTemplatePages(templateData) {
 	const pagesToBuild = [];
 
 	// If a template file has changed, rebuild all objects
@@ -123,20 +147,19 @@ function getTemplatePages() {
 	}
 
 	// If template data has changed, rebuild changed objects
-	const dataFiles = getDirectoryFiles.byFileType("templates/data", [".json"], false);
-	for (const dataFile of dataFiles) {
-		const templateKey = dataFile.substring("templates/data".length + 1, dataFile.lastIndexOf(".json"));
+	for (const filepath of templateData.filepaths) {
+		const templateKey = filepath.substring("templates/data".length + 1, filepath.lastIndexOf(".json"));
 		const relatedTemplateFile = templateFilesByKey[templateKey];
 
-		// Check if template data has been modified
-		const oldModified = modifiedCache.get(dataFile);
-		const addedFile = htmlManager.library.add(dataFile);
-		const newModified = modifiedCache.get(dataFile);
+		if(relatedTemplateFile === undefined) continue;
+
+		const modifiedData = templateData.modified[filepath];
+		const templateJSON = templateData.data[templateKey];
 
 		// If template HTML modified, rebuild all objects
 		if (relatedTemplateFile.modified) {
-			for (const page of addedFile.contents.pages) {
-				const cachekey = dataFile + "-" + page.name; // template_path.html + object.name
+			for (const page of templateJSON.pages) {
+				const cachekey = filepath + "-" + page.name; // template_path.html + object.name
 				const currentValue = hash.MD5(page); // hash.MD5(object.attributes)
 
 				pagesToBuild.push({
@@ -151,9 +174,9 @@ function getTemplatePages() {
 		}
 
 		// Otherwise, check if data objects have been modified
-		if (oldModified != newModified) {
-			for (const page of addedFile.contents.pages) {
-				const cachekey = dataFile + "-" + page.name; // template_path.html + object.name
+		if (modifiedData.old != modifiedData.new) {
+			for (const page of templateJSON.pages) {
+				const cachekey = filepath + "-" + page.name; // template_path.html + object.name
 				const currentValue = hash.MD5(page); // hash.MD5(object.attributes)
 
 				// Check cache to see if each data object has changed
@@ -177,6 +200,8 @@ function getTemplatePages() {
 
 // Run a build where we look up all file paths in the repo and build them
 module.exports = async function () {
+	const templateInfo = loadTemplateInfo();
+	
 	// Get the HTML files
 	let filepaths = getHTMLPages();
 	for (let a = 0; a < filepaths.length; a++) {
@@ -184,17 +209,20 @@ module.exports = async function () {
 	}
 
 	// Get template pages
-	const templatePages = getTemplatePages();
+	const templatePages = getTemplatePages(templateInfo);
 
-	await build(filepaths.concat(templatePages));
+	// templateInfo.data
+	await build(filepaths.concat(templatePages), templateInfo.data);
 }
 
 // Only builds specified HTML files
 module.exports.targets = build;
 
 module.exports.fromIncludes = async function (filepaths) {
+	const templateData = loadTemplateInfo();
+
 	// Get template pages
-	const templatePages = getTemplatePages();
+	const templatePages = getTemplatePages(templateData);
 
 	let changedPagePaths = [];
 	const pagepaths = getHTMLPages();
@@ -225,6 +253,6 @@ module.exports.fromIncludes = async function (filepaths) {
 	// Build the changed paths
 	const allChangedPaths = changedPagePaths.concat(templatePages);
 	if (0 < allChangedPaths.length) {
-		build(allChangedPaths);
+		build(allChangedPaths, templateData);
 	}
 }

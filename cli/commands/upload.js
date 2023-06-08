@@ -8,21 +8,13 @@ const env = require('../env.js');
 const BunnyCDN = require('../lib/bunnycdn.js');
 
 // Attempt to load the user config
-let userEnv = {};
-try {
-	userEnv = JSON.parse(fs.readFileSync('tired.json'));
-
-	if (userEnv.name === undefined) throw new Error('tired.json must specify a "name" object');
-	else if (userEnv.cdn === undefined) throw new Error('tired.json must specify a "cdn" object');
-	else if (userEnv.cdn.website === undefined) throw new Error('tired.json "cdn" must specify a "website" object');
-	else if (userEnv.cdn.website.username === undefined) throw new Error('tired.json "cdn.website" must specify a "username" string');
-	else if (userEnv.cdn.website.key === undefined) throw new Error('tired.json "cdn.website" must specify a "key" string');
-} catch (err) {
-	throw new Error(err);
-}
+if (global.tired_config.cdn === undefined) throw new Error('tired.json must specify a "cdn" object');
+else if (global.tired_config.cdn.website === undefined) throw new Error('tired.json "cdn" must specify a "website" object');
+else if (global.tired_config.cdn.website.username === undefined) throw new Error('tired.json "cdn.website" must specify a "username" string');
+else if (global.tired_config.cdn.website.key === undefined) throw new Error('tired.json "cdn.website" must specify a "key" string');
 
 const imageUploader = new BunnyCDN(env.cdn.image.key, env.cdn.image.username);
-const websiteUploader = new BunnyCDN(userEnv.cdn.website.key, userEnv.cdn.website.username);
+const websiteUploader = new BunnyCDN(global.tired_config.cdn.website.key, global.tired_config.cdn.website.username);
 
 const BUNNY_CONCURRENCY = 5;
 async function waitForPromises(promises, concurrency) {
@@ -95,7 +87,7 @@ async function uploadIncludesImages() {
 	for (let a = 0; a < maxLen; a++) {
 		const filepath = uploadFilepaths[a];
 		const relativePath = filepath.substring(FOLDER_PATH.length + 1);
-		const uploadFilePath = `${userEnv.name}/${relativePath}`;
+		const uploadFilePath = `${global.tired_config.name}/${relativePath}`;
 
 		// bunnyCache.remove(filepath);
 

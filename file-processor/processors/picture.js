@@ -5,22 +5,13 @@ const pictureSizeCache = (require('tired-disk-cache'))(".tired/cache/analyize/pi
 
 const formatAttributes = require('tired-format-attributes');
 
-let userEnv = {};
-try {
-	userEnv = JSON.parse(fs.readFileSync('tired.json'));
-
-	if (userEnv.name === undefined) throw new Error('tired.json must specify a "name" object');
-} catch (err) {
-	throw new Error(err);
-}
-
 module.exports = {
 	contents: false,
 	preprocess: function (contents) {
 		return "";
 	},
 	element: function (cachekey, path, attributes, contents) {
-		const combinedKey = pictureCache.key(cachekey, path, JSON.stringify(attributes));
+		const combinedKey = pictureCache.key(cachekey, path, JSON.stringify(attributes.attr));
 		const cacheItem = pictureCache.get(combinedKey);
 		// pictureSizeCache.get(combinedKey)
 		// Get the picture size cache and somehow check that the sizes cached for this item are the same as the sizes we most recently analyzed
@@ -29,7 +20,7 @@ module.exports = {
 		} else {
 			// id="${attributes.attr.id}"
 			if(path[0] != "/") path = "/" + path;
-			if(path.indexOf("/includes") === 0) path = "/" + userEnv.name + path.substring("/includes".length);
+			if(path.indexOf("/includes") === 0) path = "/" + global.tired_config.name + path.substring("/includes".length);
 			path = process.env.BASE_IMAGE_PATH + path;
 
 			const newCacheItem = `<picture ${formatAttributes(attributes.attr, ["src", "alt"])}>

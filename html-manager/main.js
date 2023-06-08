@@ -32,7 +32,7 @@ module.exports = class HTMLManager {
 		else {
 			this.library.updateModified(path);
 			const contents = fs.readFileSync(path, 'utf8');
-			return new HTMLFile(path, contents, { attr: attributes, template: templateAttributes }, this.library); // Compile the non-library file 
+			return new HTMLFile(path, contents, { attr: attributes, root: attributes, template: templateAttributes }, this.library); // Compile the non-library file 
 		}
 	}
 }
