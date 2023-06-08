@@ -9,6 +9,9 @@ async function handlecli(arguments) {
 		case "host":
 			require('./host.js')(3000);
 			break;
+		case "deploy":
+			await require('./deploy.js')();
+			break;
 		default:
 			if (arguments[0] != undefined) {
 				const port = parseInt(arguments[0]);

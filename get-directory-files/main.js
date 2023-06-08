@@ -36,7 +36,7 @@ module.exports.byFileType = function (directoryPath, filetypes = [], allowNested
 		// Recursively load nested directory files
 		if (item.isDirectory()) {
 			if (allowNested) {
-				const nestedFiles = module.exports(filepath, ignorePaths, true, false);
+				const nestedFiles = module.exports.byFileType(filepath, filetypes, true, false);
 				files.push.apply(files, nestedFiles);
 			}
 		} else {

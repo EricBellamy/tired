@@ -7,13 +7,14 @@ const hash = require('object-hash');
 const colorLog = require('tired-color-log');
 const getDirectoryFiles = require('tired-get-directory-files');
 
-const htmlManager = new (require('tired-html-manager'))("include");
+const htmlManager = new (require('tired-html-manager'))("includes");
 const includeCache = (require('tired-disk-cache'))(".tired/cache/includes");
 const modifiedCache = (require('tired-disk-cache'))(".tired/cache/library/modified");
 const templateCache = (require('tired-disk-cache'))(".tired/cache/templates");
 
 // Sets the path that gets prepended to all images
-process.env.BASE_IMAGE_PATH = "https://dev.tipsybartender.com";
+// process.env.BASE_IMAGE_PATH = "https://dev.tipsybartender.com";
+process.env.BASE_IMAGE_PATH = "https://img.tired.dev";
 
 function fileInStructureWasModified(filepath) {
 	// Check if the base filepath was modified

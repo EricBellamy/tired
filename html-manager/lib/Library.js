@@ -12,6 +12,7 @@ module.exports = class Library {
 		this.directory = baseDirectory;
 	}
 	getSrc(src) {
+		if(src[0] === "/") src = src.substring(1);
 		const extname = path.extname(src).substring(1);
 		return `${this.directory}/${extname}/${src}`;
 	}
