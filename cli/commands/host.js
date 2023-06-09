@@ -1,7 +1,9 @@
 const build = require('./build.js');
 
 async function launchServers(PORT_NUMBER){
-
+	serverStatus = true;
+	global.tired_config.server = { url: `http://127.0.0.1:${PORT_NUMBER}` };
+	require('../lib/lightserver.js')(PORT_NUMBER, true);
 }
 
 let serverStatus = false;

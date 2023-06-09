@@ -36,14 +36,21 @@ function fileInStructureWasModified(filepath) {
 }
 
 function buildFile(file, templateData, index, max) {
-	colorLog("host.js",
+	let fileData = file.data != undefined ? file.data : {};
+	const logArgs = [
 		colorLog.normal(`[${index}/${max}] (`),
 		colorLog.normal2(colorLog.percentage(index, max)),
 		colorLog.normal(") "),
 		colorLog.normal("Building page "),
 		colorLog.normal2(file.path)
-	);
-	let fileData = file.data != undefined ? file.data : {};
+	];
+	if(fileData.name != undefined){
+		logArgs.push(
+			colorLog.normal(` for `),
+			colorLog.normal2(fileData.name),
+		)
+	}
+	colorLog("host.js", ...logArgs);
 	// REMOVE THIS
 	const loadedFile = htmlManager.loadFile(file.path, file.data, templateData);
 
@@ -86,9 +93,25 @@ async function buildFilepaths(files, templateData) {
 	}
 }
 
+function createSitemap(){
+	// Create a basic list of URLs
+	const sitemapUrls = [];
+	const pageFiles = getDirectoryFiles.byFileType(".tired/dist", [".html"]);
+	for(const pageFile of pageFiles){
+		let pagePath = pageFile.substring(".tired/dist".length, pageFile.lastIndexOf(".html"));
+		if(pagePath === "/index") pagePath = "/";
+		sitemapUrls.push(global.tired_config.url + pagePath);
+	}
+	fs.writeFileSync(".tired/dist/sitemap.txt", sitemapUrls.join("\n"));
+}
+
 async function build(filepaths, templateData) {
 	console.time("build");
 	await buildFilepaths(filepaths, templateData);
+
+	// Create sitemap
+	createSitemap();
+
 	console.timeEnd("build");
 }
 
@@ -223,9 +246,7 @@ module.exports = async function () {
 	await build(filepaths.concat(templatePages), templateInfo.data);
 }
 
-// Only builds specified HTML files
-module.exports.targets = build;
-
+// Only builds related page files from the changed paths
 module.exports.fromIncludes = async function (filepaths) {
 	const templateInfo = loadTemplateInfo();
 
@@ -261,6 +282,6 @@ module.exports.fromIncludes = async function (filepaths) {
 	// Build the changed paths
 	const allChangedPaths = changedPagePaths.concat(templatePages);
 	if (0 < allChangedPaths.length) {
-		build(allChangedPaths, templateInfo.data);
+		await build(allChangedPaths, templateInfo.data);
 	}
 }

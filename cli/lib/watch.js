@@ -46,7 +46,10 @@ async function processWatch(watchCallback) {
 			if (queues.target.length != 0) return await processWatch(watchCallback);
 
 			// Trigger the live reload
-			// if (tired.HOST_CONFIG.server.url) axios(`${tired.HOST_CONFIG.server.url}/__lightserver__/trigger`)
+			if (global.tired_config.server != undefined && global.tired_config.server.url != undefined) {
+				console.log(global.tired_config.server.url);
+				axios(`${global.tired_config.server.url}/__lightserver__/trigger`)
+			}
 		});
 	}
 }

@@ -15,6 +15,11 @@ try {
 	throw new Error('tired.json config file must be valid JSON');
 }
 if (global.tired_config.name === undefined) throw new Error('tired.json must specify a "name" object');
+if (global.tired_config.url === undefined) throw new Error('tired.json must specify a "url" object');
+else {
+	if(global.tired_config.url.indexOf("http") === -1) global.tired_config.url = "https://" + global.tired_config.url;
+	if(global.tired_config.url.slice(-1)[0] === "/") global.tired_config.url = global.tired_config.url.substring(0, global.tired_config.url.length - 1);
+}
 
 async function handlecli(arguments) {
 	switch (arguments[0]) {
