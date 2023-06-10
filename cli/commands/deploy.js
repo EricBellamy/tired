@@ -92,6 +92,7 @@ module.exports = async function () {
 
 	// Upload /exports files
 	// Upload /includes jpg & png
+	// Upload "upload" config files
 	await uploadCommand();
 
 	console.timeEnd("deploy");

@@ -118,6 +118,49 @@ async function uploadIncludesImages() {
 	promises = await waitForPromises(promises);
 }
 
+async function uploadSitemapFile() {
+	const filepath = ".tired/dist/sitemap.txt";
+	await deployFile(websiteUploader, filepath, "sitemap.txt", {
+		success: function () {
+			colorLog("deploy.js",
+				colorLog.normal("Uploaded dist file "),
+				colorLog.normal2(filepath)
+			);
+		},
+		failure: function () {
+			// Remove cache for next build
+			bunnyCache.remove(filepath);
+			colorLog("deploy.js",
+				colorLog.normal("Failed to upload dist file "),
+				colorLog.normal2(filepath)
+			);
+		}
+	});
+}
+
+async function uploadConfigFiles() {
+	if (global.tired_config.upload != undefined) {
+		for (const filepath of global.tired_config.upload) {
+			await deployFile(websiteUploader, filepath, filepath, {
+				success: function () {
+					colorLog("deploy.js",
+						colorLog.normal("Uploaded tired.json \"upload\" file "),
+						colorLog.normal2(filepath)
+					);
+				},
+				failure: function () {
+					// Remove cache for next build
+					bunnyCache.remove(filepath);
+					colorLog("deploy.js",
+						colorLog.normal("Failed to upload tired.json \"upload\" file "),
+						colorLog.normal2(filepath)
+					);
+				}
+			})
+		}
+	}
+}
+
 // Integrate bunnycdn cache into every file upload
 module.exports = async function () {
 	console.time("upload");
@@ -128,6 +171,14 @@ module.exports = async function () {
 
 	// Upload /includes jpg & png
 	await uploadIncludesImages();
+	bunnyCache.save();
+
+	// Upload .tired/dist/sitemap.txt
+	await uploadSitemapFile();
+	bunnyCache.save();
+
+	// Upload tired.json "upload" files
+	await uploadConfigFiles();
 	bunnyCache.save();
 
 	console.timeEnd("upload");
