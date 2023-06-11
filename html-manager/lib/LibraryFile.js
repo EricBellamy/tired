@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const fileProcessor = require('tired-file-processor');
 
-module.exports = class LoadedFile {
+module.exports = class LibraryFile {
 	path;
 	type;
 	contents;

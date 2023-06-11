@@ -17,8 +17,8 @@ try {
 if (global.tired_config.name === undefined) throw new Error('tired.json must specify a "name" object');
 if (global.tired_config.url === undefined) throw new Error('tired.json must specify a "url" object');
 else {
-	if(global.tired_config.url.indexOf("http") === -1) global.tired_config.url = "https://" + global.tired_config.url;
-	if(global.tired_config.url.slice(-1)[0] === "/") global.tired_config.url = global.tired_config.url.substring(0, global.tired_config.url.length - 1);
+	if (global.tired_config.url.indexOf("http") === -1) global.tired_config.url = "https://" + global.tired_config.url;
+	if (global.tired_config.url.slice(-1)[0] === "/") global.tired_config.url = global.tired_config.url.substring(0, global.tired_config.url.length - 1);
 }
 
 async function handlecli(arguments) {
@@ -35,10 +35,14 @@ async function handlecli(arguments) {
 			process.env.target = "prod";
 			await require('./deploy.js')();
 			break;
+		case "logic":
+			process.env.target = "dev";
+			await require('./logic.js')(arguments[1]);
+			break;
 		default:
 			if (arguments[0] != undefined) {
 				process.env.target = "dev";
-				const port = parseInt(arguments[0]);
+				const port = parseInt(arguments[0]); // is the first argument a number?
 				if (!isNaN(port)) require('./host.js')(port);
 			}
 			break;

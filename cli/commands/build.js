@@ -3,6 +3,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const hash = require('object-hash');
+const getTemplateInfo = require('../lib/getTemplateInfo.js');
 
 const colorLog = require('tired-color-log');
 const getDirectoryFiles = require('tired-get-directory-files');
@@ -124,34 +125,6 @@ function getHTMLPages() {
 	return rootFiles.concat(getDirectoryFiles.byFileType("pages", [".html"]));
 }
 
-function loadTemplateInfo() {
-	let templates = {
-		filepaths: [],
-		modified: {},
-		data: {}
-	}
-	// If template data has changed, rebuild changed objects
-	const dataFiles = getDirectoryFiles.byFileType("templates/data", [".json"], false);
-	for (const filepath of dataFiles) {
-		templates.filepaths.push(filepath);
-
-		const templateKey = filepath.substring("templates/data".length + 1, filepath.lastIndexOf(".json"));
-
-		// Check if template data has been modified
-		const oldModified = modifiedCache.get(filepath);
-		const addedFile = htmlManager.library.add(filepath);
-		const newModified = modifiedCache.get(filepath);
-
-		templates.modified[filepath] = {
-			old: oldModified,
-			new: newModified
-		}
-		templates.data[templateKey] = addedFile.contents;
-	}
-
-	return templates;
-}
-
 function getTemplatePages(templateData) {
 	const pagesToBuild = [];
 
@@ -231,7 +204,7 @@ function getTemplatePages(templateData) {
 
 // Run a build where we look up all file paths in the repo and build them
 module.exports = async function () {
-	const templateInfo = loadTemplateInfo();
+	const templateInfo = getTemplateInfo(htmlManager);
 
 	// Get the HTML files
 	let filepaths = getHTMLPages();
@@ -248,7 +221,7 @@ module.exports = async function () {
 
 // Only builds related page files from the changed paths
 module.exports.fromIncludes = async function (filepaths) {
-	const templateInfo = loadTemplateInfo();
+	const templateInfo = getTemplateInfo(htmlManager);
 
 	// Get template pages
 	const templatePages = getTemplatePages(templateInfo);
@@ -258,8 +231,10 @@ module.exports.fromIncludes = async function (filepaths) {
 
 	// Check if the filepath is a page path
 	for (const filepath of filepaths) {
+		// If not page path
 		if (pagepaths.indexOf(filepath) === -1) {
-			htmlManager.library.updateModified(filepath);
+			// htmlManager.library.updateModified(filepath);
+			htmlManager.library.add(filepath);
 		}
 	}
 
@@ -282,6 +257,7 @@ module.exports.fromIncludes = async function (filepaths) {
 	// Build the changed paths
 	const allChangedPaths = changedPagePaths.concat(templatePages);
 	if (0 < allChangedPaths.length) {
+		console.log(allChangedPaths);
 		await build(allChangedPaths, templateInfo.data);
 	}
 }

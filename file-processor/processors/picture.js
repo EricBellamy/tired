@@ -19,12 +19,19 @@ module.exports = {
 			return cacheItem.element;
 		} else {
 			// id="${attributes.attr.id}"
-			if(path[0] != "/") path = "/" + path;
-			if(path.indexOf("/includes") === 0) path = "/" + global.tired_config.name + path.substring("/includes".length);
+			if (path[0] != "/") path = "/" + path;
+			if (path.indexOf("/includes") === 0) path = "/" + global.tired_config.name + path.substring("/includes".length);
 			path = process.env.BASE_IMAGE_PATH + path;
 
-			const newCacheItem = `<picture ${formatAttributes(attributes.attr, ["src", "alt"])}>
-			<img src="${path}" alt="${attributes.attr.alt}" loading="lazy" decoding="async">
+			const imgAttributes = {
+				src: path,
+				alt: attributes.attr.alt
+			}
+			if(attributes.attr.width) imgAttributes.width = attributes.attr.width;
+			if(attributes.attr.height) imgAttributes.height = attributes.attr.height;
+			
+			const newCacheItem = `<picture ${formatAttributes(attributes.attr, ["src", "alt", "width", "height"])}>
+			<img ${formatAttributes(imgAttributes)} loading="lazy" decoding="async">
 			</picture>`;
 			pictureCache.set(combinedKey, {
 				sizes: "",
