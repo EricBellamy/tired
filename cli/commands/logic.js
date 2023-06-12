@@ -18,7 +18,7 @@ function loadLogicFile(filename) {
 }
 
 module.exports = async function (filename) {
-	const templateInfo = getTemplateInfo(htmlManager.library);
+	const templateInfo = getTemplateInfo(htmlManager);
 	if (filename === undefined) {
 		colorLog("logic.js",
 			colorLog.error("must specify \""),

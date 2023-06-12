@@ -6,12 +6,13 @@ module.exports = function (attributes, ignore = []) {
 
 	// Move keys with no values like <svg lazy > to the front for visibility in the html output
 	keys.sort((a, b) => {
+		if(attributes[a] === undefined) return -1;
 		if (attributes[a].length < attributes[b].length) return -1;
 	});
 
 	// Build the attribute string
 	for (const key of keys) {
-		if (ignore.includes(key)) continue;
+		if (attributes[key] === undefined || ignore.includes(key)) continue;
 
 		attributeString += key;
 		if (attributes[key] != '') attributeString += `="${attributes[key]}" `;

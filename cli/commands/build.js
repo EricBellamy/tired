@@ -28,9 +28,7 @@ function fileInStructureWasModified(filepath) {
 	for (key in includeSrcModified) {
 		const cachedIncludeModified = includeSrcModified[key];
 		const libraryModified = modifiedCache.get(key);
-		if (cachedIncludeModified != libraryModified) {
-			return true;
-		}
+		if (cachedIncludeModified != libraryModified) return true;
 	}
 
 	return false;
@@ -135,11 +133,14 @@ function getTemplatePages(templateData) {
 		const key = templateFiles[a].substring("templates/html".length + 1, templateFiles[a].lastIndexOf(".html"));
 		templateFilesByKey[key] = { path: templateFiles[a], modified: false };
 
+		// Were any of the template includes modified
+		const structureWasModified = fileInStructureWasModified(templateFiles[a]);
+		
 		// Check if template file itself has been modified
 		const oldModified = htmlManager.library.getCachedModified(templateFiles[a]);
 		const newModified = htmlManager.library.updateModified(templateFiles[a]);
 
-		if (oldModified != newModified) templateFilesByKey[key].modified = true;
+		if (structureWasModified || oldModified != newModified) templateFilesByKey[key].modified = true;
 	}
 
 	// If template data has changed, rebuild changed objects
@@ -223,20 +224,19 @@ module.exports = async function () {
 module.exports.fromIncludes = async function (filepaths) {
 	const templateInfo = getTemplateInfo(htmlManager);
 
-	// Get template pages
-	const templatePages = getTemplatePages(templateInfo);
-
 	let changedPagePaths = [];
 	const pagepaths = getHTMLPages();
 
 	// Check if the filepath is a page path
 	for (const filepath of filepaths) {
 		// If not page path
-		if (pagepaths.indexOf(filepath) === -1) {
-			// htmlManager.library.updateModified(filepath);
+		if (pagepaths.indexOf(filepath) === -1 && filepath.indexOf("templates/") != 0) {
 			htmlManager.library.add(filepath);
 		}
 	}
+	
+	// Get template pages
+	const templatePages = getTemplatePages(templateInfo);
 
 	// Find the page paths associated with the provided include paths
 	for (const pagepath of pagepaths) {
@@ -257,7 +257,7 @@ module.exports.fromIncludes = async function (filepaths) {
 	// Build the changed paths
 	const allChangedPaths = changedPagePaths.concat(templatePages);
 	if (0 < allChangedPaths.length) {
-		console.log(allChangedPaths);
+		// console.log(allChangedPaths);
 		await build(allChangedPaths, templateInfo.data);
 	}
 }
