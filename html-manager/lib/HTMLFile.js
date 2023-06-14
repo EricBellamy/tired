@@ -99,6 +99,18 @@ module.exports = class HTMLFile {
 			includes = this.parsed.querySelectorAll("include");
 		}
 
+		// Handle quotations in links from how strings are parsed
+		const links = this.parsed.querySelectorAll("a");
+		for (const link of links) {
+			const href = link.getAttribute("href");
+			try {
+				if (href[0] === '"') link.setAttribute("href", href.substring(1, href.length - 1));
+			} catch(err){
+				console.log(link.toString());
+				throw new Error(err);
+			}
+		}
+
 		includeCache.set(this.path, this.includedPaths);
 	}
 	saveFile() {

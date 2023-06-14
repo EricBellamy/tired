@@ -13,10 +13,10 @@ else if (global.tired_config.cdn.website === undefined) throw new Error('tired.j
 else if (global.tired_config.cdn.website.username === undefined) throw new Error('tired.json "cdn.website" must specify a "username" string');
 else if (global.tired_config.cdn.website.key === undefined) throw new Error('tired.json "cdn.website" must specify a "key" string');
 
-const imageUploader = new BunnyCDN(env.cdn.image.key, env.cdn.image.username);
-const websiteUploader = new BunnyCDN(global.tired_config.cdn.website.key, global.tired_config.cdn.website.username);
+const imageUploader = new BunnyCDN(env.cdn.image.key, env.cdn.image.username, env.cdn.image.cdn_id, env.cdn.account_key);
+const websiteUploader = new BunnyCDN(global.tired_config.cdn.website.key, global.tired_config.cdn.website.username, global.tired_config.cdn.website.cdn_id, global.tired_config.cdn.account_key);
 
-const BUNNY_CONCURRENCY = 5;
+const BUNNY_CONCURRENCY = 10;
 async function waitForPromises(promises, concurrency) {
 	if (concurrency === undefined) {
 		if (0 < promises.length) {
@@ -38,6 +38,8 @@ async function deployFile(uploader, INPUT_PATH, OUTPUT_PATH, callbacks) {
 }
 
 async function uploadExportFiles() {
+	let updatedCount = 0;
+
 	let promises = [];
 	const FOLDER_PATH = "exports";
 	// Get all files in the .tired/dist directory
@@ -50,6 +52,7 @@ async function uploadExportFiles() {
 
 		promises.push(deployFile(websiteUploader, filepath, uploadFilePath, {
 			success: function () {
+				updatedCount++;
 				colorLog("deploy.js",
 					colorLog.normal(`[${a + 1}/${maxLen}] (`),
 					colorLog.normal2(colorLog.percentage(a + 1, maxLen)),
@@ -73,9 +76,13 @@ async function uploadExportFiles() {
 		promises = await waitForPromises(promises, BUNNY_CONCURRENCY);
 	}
 	promises = await waitForPromises(promises);
+
+	return updatedCount;
 }
 
 async function uploadIncludesImages() {
+	let updatedCount = 0;
+
 	let promises = [];
 	const FOLDER_PATH = "includes";
 	// Get all files in the .tired/dist directory
@@ -93,6 +100,7 @@ async function uploadIncludesImages() {
 
 		promises.push(deployFile(imageUploader, filepath, uploadFilePath, {
 			success: function () {
+				updatedCount++;
 				colorLog("deploy.js",
 					colorLog.normal(`[${a + 1}/${maxLen}] (`),
 					colorLog.normal2(colorLog.percentage(a + 1, maxLen)),
@@ -116,12 +124,17 @@ async function uploadIncludesImages() {
 		promises = await waitForPromises(promises, BUNNY_CONCURRENCY);
 	}
 	promises = await waitForPromises(promises);
+
+	return updatedCount;
 }
 
 async function uploadSitemapFile() {
+	let updatedCount = 0;
+
 	const filepath = ".tired/dist/sitemap.txt";
 	await deployFile(websiteUploader, filepath, "sitemap.txt", {
 		success: function () {
+			updatedCount++;
 			colorLog("deploy.js",
 				colorLog.normal("Uploaded dist file "),
 				colorLog.normal2(filepath)
@@ -136,13 +149,18 @@ async function uploadSitemapFile() {
 			);
 		}
 	});
+
+	return updatedCount;
 }
 
 async function uploadConfigFiles() {
+	let updatedCount = 0;
+
 	if (global.tired_config.upload != undefined) {
 		for (const filepath of global.tired_config.upload) {
 			await deployFile(websiteUploader, filepath, filepath, {
 				success: function () {
+					updatedCount++;
 					colorLog("deploy.js",
 						colorLog.normal("Uploaded tired.json \"upload\" file "),
 						colorLog.normal2(filepath)
@@ -159,27 +177,36 @@ async function uploadConfigFiles() {
 			})
 		}
 	}
+
+	return updatedCount;
 }
 
 // Integrate bunnycdn cache into every file upload
-module.exports = async function () {
+module.exports = async function (purgeWebsiteCache = true) {
 	console.time("upload");
 
+	let updatedWebsiteCount = 0;
+
 	// Upload /exports files
-	await uploadExportFiles();
+	updatedWebsiteCount += await uploadExportFiles();
 	bunnyCache.save();
 
 	// Upload /includes jpg & png
-	await uploadIncludesImages();
+	let updatedImageCount = await uploadIncludesImages();
 	bunnyCache.save();
 
 	// Upload .tired/dist/sitemap.txt
-	await uploadSitemapFile();
+	updatedWebsiteCount += await uploadSitemapFile();
 	bunnyCache.save();
 
 	// Upload tired.json "upload" files
-	await uploadConfigFiles();
+	updatedWebsiteCount += await uploadConfigFiles();
 	bunnyCache.save();
 
+	if(0 < updatedImageCount) imageUploader.purge();
+	if(purgeWebsiteCache && 0 < updatedWebsiteCount) websiteUploader.purge();
+
 	console.timeEnd("upload");
+
+	return updatedWebsiteCount;
 }

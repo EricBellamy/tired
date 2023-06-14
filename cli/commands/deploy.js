@@ -14,11 +14,11 @@ else if (global.tired_config.cdn.website === undefined) throw new Error('tired.j
 else if (global.tired_config.cdn.website.username === undefined) throw new Error('tired.json "cdn.website" must specify a "username" string');
 else if (global.tired_config.cdn.website.key === undefined) throw new Error('tired.json "cdn.website" must specify a "key" string');
 
-const imageUploader = new BunnyCDN(env.cdn.image.key, env.cdn.image.username);
-const websiteUploader = new BunnyCDN(global.tired_config.cdn.website.key, global.tired_config.cdn.website.username);
+const imageUploader = new BunnyCDN(env.cdn.image.key, env.cdn.image.username, env.cdn.image.cdn_id, env.cdn.account_key);
+const websiteUploader = new BunnyCDN(global.tired_config.cdn.website.key, global.tired_config.cdn.website.username, global.tired_config.cdn.website.cdn_id, global.tired_config.cdn.account_key);
 
 const DIST_PATH = ".tired/dist";
-const uploadConcurrency = 5;
+const uploadConcurrency = 10;
 
 async function waitForPromises(promises, concurrency) {
 	if (concurrency === undefined) {
@@ -42,6 +42,8 @@ async function deployFile(uploader, INPUT_PATH, OUTPUT_PATH, callbacks) {
 }
 
 async function uploadHTMLPages() {
+	let updatedCount = 0;
+
 	let promises = [];
 	// Get all files in the .tired/dist directory
 	const distFilepaths = getDirectoryFiles.byFileType(DIST_PATH, [".html"]);
@@ -57,6 +59,7 @@ async function uploadHTMLPages() {
 
 		promises.push(deployFile(websiteUploader, filepath, bunnycdnPath, {
 			success: function () {
+				updatedCount++;
 				colorLog("deploy.js",
 					colorLog.normal(`[${a + 1}/${maxLen}] (`),
 					colorLog.normal2(colorLog.percentage(a + 1, maxLen)),
@@ -80,6 +83,8 @@ async function uploadHTMLPages() {
 		promises = await waitForPromises(promises, uploadConcurrency);
 	}
 	promises = await waitForPromises(promises);
+
+	return updatedCount;
 }
 
 // Integrate bunnycdn cache into every file upload
@@ -87,13 +92,18 @@ module.exports = async function () {
 	console.time("deploy");
 	// bunnyCache.clear();
 
-	await uploadHTMLPages();
+	let updatedWebsiteCount = 0;
+
+	updatedWebsiteCount += await uploadHTMLPages();
 	bunnyCache.save();
 
 	// Upload /exports files
 	// Upload /includes jpg & png
 	// Upload "upload" config files
-	await uploadCommand();
+	updatedWebsiteCount += await uploadCommand(false);
+
+	// Purge the cache if we've deployed something
+	if(0 < updatedWebsiteCount) websiteUploader.purge();
 
 	console.timeEnd("deploy");
 }

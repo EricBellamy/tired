@@ -25,7 +25,7 @@ async function handlecli(arguments) {
 	switch (arguments[0]) {
 		case "build":
 			process.env.target = "prod";
-			require('./build.js')();
+			require('./build.js')(arguments[1] === "all");
 			break;
 		case "host":
 			process.env.target = "dev";

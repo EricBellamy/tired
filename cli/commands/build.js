@@ -123,7 +123,7 @@ function getHTMLPages() {
 	return rootFiles.concat(getDirectoryFiles.byFileType("pages", [".html"]));
 }
 
-function getTemplatePages(templateData) {
+function getTemplatePages(templateData, force = false) {
 	const pagesToBuild = [];
 
 	// If a template file has changed, rebuild all objects
@@ -140,7 +140,7 @@ function getTemplatePages(templateData) {
 		const oldModified = htmlManager.library.getCachedModified(templateFiles[a]);
 		const newModified = htmlManager.library.updateModified(templateFiles[a]);
 
-		if (structureWasModified || oldModified != newModified) templateFilesByKey[key].modified = true;
+		if (force || structureWasModified || oldModified != newModified) templateFilesByKey[key].modified = true;
 	}
 
 	// If template data has changed, rebuild changed objects
@@ -204,17 +204,17 @@ function getTemplatePages(templateData) {
 
 
 // Run a build where we look up all file paths in the repo and build them
-module.exports = async function () {
+module.exports = async function (force = false) {
 	const templateInfo = getTemplateInfo(htmlManager);
 
 	// Get the HTML files
 	let filepaths = getHTMLPages();
 	for (let a = 0; a < filepaths.length; a++) {
-		filepaths[a] = { path: filepaths[a], data: {} };
+		filepaths[a] = { path: filepaths[a], data: {}, force: force };
 	}
 
 	// Get template pages
-	const templatePages = getTemplatePages(templateInfo);
+	const templatePages = getTemplatePages(templateInfo, force);
 
 	// templateInfo.data
 	await build(filepaths.concat(templatePages), templateInfo.data);

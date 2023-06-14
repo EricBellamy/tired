@@ -6,9 +6,13 @@ const bunnyCache = (require('tired-disk-cache'))(".tired/cache/bunnycdn");
 class Uploader {
 	API_KEY;
 	STORAGE_NAME;
-	constructor(API_KEY, STORAGE_NAME) {
+	CDN_ID;
+	ACCOUNT_KEY;
+	constructor(API_KEY, STORAGE_NAME, CDN_ID, ACCOUNT_KEY) {
 		this.API_KEY = API_KEY;
 		this.STORAGE_NAME = STORAGE_NAME;
+		this.CDN_ID = CDN_ID;
+		this.ACCOUNT_KEY = ACCOUNT_KEY;
 
 		this.init();
 	}
@@ -22,6 +26,32 @@ class Uploader {
 			maxContentLength: Infinity,
 			maxBodyLength: Infinity
 		});
+
+		if (this.CDN_ID != undefined) {
+			this.purgeClient = axios.create({
+				baseURL: `https://api.bunny.net/pullzone/${this.CDN_ID}/purgeCache`,
+				headers: {
+					AccessKey: this.ACCOUNT_KEY,
+					"content-type": "application/json"
+				},
+				maxContentLength: Infinity,
+				maxBodyLength: Infinity
+			});
+		}
+	}
+	async purge() {
+		try {
+			const response = await this.purgeClient({
+				method: 'POST'
+			});
+
+			if (response.status === 204) return { status: true };
+			return { status: false };
+
+		} catch (err) {
+			console.log(err);
+			return { status: false };
+		}
 	}
 	async uploadData(data, UPLOAD_FILE_PATH) {
 		try {

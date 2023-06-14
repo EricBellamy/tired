@@ -11,9 +11,14 @@ module.exports = function (html) {
 				this.text += text;
 			}
 		}
+		function escapeText(text){
+			return text.replace(/"/g, '&quot;');
+		}
 		const log = function(text = ""){
-			if(typeof text === 'object') text = JSON.stringify(text);
-			node.add(text);
+			const textType = typeof text;
+			if(textType === 'object') text = JSON.stringify(text);
+			else if (textType === 'string') node.add(escapeText(text));
+			else node.add(text);
 		}
 		function run(){
 	`;
