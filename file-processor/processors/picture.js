@@ -5,6 +5,7 @@ const pagePictureSourceCache = (require('tired-disk-cache'))(".tired/cache/analy
 
 const formatAttributes = require('tired-format-attributes');
 const getFileType = require('tired-get-file-type');
+const colorLog = require('tired-color-log');
 
 function getSourceData(cachekey, attributeKey) {
 	if (attributeKey === undefined && !pagePictureSourceCache.has(cachekey)) return;
@@ -31,7 +32,7 @@ module.exports = {
 		if (cacheItem != undefined) {
 			return cacheItem.element;
 		} else {
-			// console.log(attributes);
+			const attributeKey = attributes.attr.key;
 			const relatedSourceData = getSourceData(cachekey, attributes.attr.key);
 
 			// id="${attributes.attr.id}"
@@ -70,6 +71,23 @@ module.exports = {
 					loadingInfo.string += `loading="eager"`;
 				}
 			} else {
+				// Unanalyzed page path
+				if (attributeKey != undefined) {
+					colorLog("picture.js",
+						colorLog.warning(`No analyze data found for page "`),
+						colorLog.warning2(cachekey),
+						colorLog.warning(`"`)
+					);
+				} else { // Missing key attribute
+					colorLog("picture.js",
+						colorLog.warning(`No "key" attribute found for "`),
+						colorLog.warning2(path),
+						colorLog.warning(`" in file "`),
+						colorLog.warning2(cachekey),
+						colorLog.warning(`"`)
+					);
+				}
+
 				if (attributes.attr.width != undefined) {
 					imgAttributes.width = attributes.attr.width;
 					sourceTagString += `<source srcset="${path}?width=${imgAttributes.width} 2x" type="image/${getFileType.nodot(path)}">`;

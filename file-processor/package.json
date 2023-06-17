@@ -10,6 +10,7 @@
 		"node-html-parser": "^6.1.5",
 		"node-sass": "^9.0.0",
 		"terser-sync": "^0.1.1",
+		"tired-color-log": "file:../color-log",
 		"tired-disk-cache": "file:../cache",
 		"tired-format-attributes": "file:../format-attributes",
 		"tired-get-file-type": "file:../get-file-type",
