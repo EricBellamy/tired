@@ -135,7 +135,7 @@ async function getImageSourceInfoForPage(SERVER_URL, pagePath, pageSizes) {
 				(imageSizes[imageKey].width < currentImageWidth + Math.ceil(currentImageWidth * 0.02)) ||
 				currentImageWidth / imageSizes[imageKey].width < 0.6
 			) {
-				const newDisplayWidth = roundToNearestTen(currentImageWidth * 1.25);
+				const newDisplayWidth = roundToNearestTen(currentImageWidth * 1.15);
 				imageSizes[imageKey].width = newDisplayWidth;
 				imageSizes[imageKey].widths[pagesize.width] = {
 					width: newDisplayWidth,

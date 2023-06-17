@@ -76,6 +76,8 @@ module.exports = {
 					colorLog("picture.js",
 						colorLog.warning(`No analyze data found for page "`),
 						colorLog.warning2(cachekey),
+						colorLog.warning(`" for path "`),
+						colorLog.warning2(path),
 						colorLog.warning(`"`)
 					);
 				} else { // Missing key attribute
