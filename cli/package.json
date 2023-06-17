@@ -12,6 +12,7 @@
 		"light-server": "^2.9.1",
 		"object-hash": "^3.0.0",
 		"path": "^0.12.7",
+		"puppeteer": "^20.7.2",
 		"tired-color-log": "file:../color-log",
 		"tired-disk-cache": "file:../cache",
 		"tired-get-directory-files": "file:../get-directory-files",

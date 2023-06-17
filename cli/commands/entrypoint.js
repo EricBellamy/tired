@@ -21,6 +21,15 @@ else {
 	if (global.tired_config.url.slice(-1)[0] === "/") global.tired_config.url = global.tired_config.url.substring(0, global.tired_config.url.length - 1);
 }
 
+// CDN url
+if (global.tired_config.cdn.domain === undefined) throw new Error('tired.json must specify a "domain" string in the "cdn" object');
+process.env.BASE_IMAGE_PATH = global.tired_config.cdn.domain;
+// Fix https
+if (process.env.BASE_IMAGE_PATH.indexOf("http://") === 0) throw new Error('tired.json cdn.domain must use HTTPS');
+if (process.env.BASE_IMAGE_PATH.indexOf("https://") === -1) process.env.BASE_IMAGE_PATH = "https://" + process.env.BASE_IMAGE_PATH;
+// Ensure no trailing slash
+if (process.env.BASE_IMAGE_PATH.slice(-1)[0] === "/") process.env.BASE_IMAGE_PATH = process.env.BASE_IMAGE_PATH.substring(0, process.env.BASE_IMAGE_PATH.length - 1);
+
 async function handlecli(arguments) {
 	switch (arguments[0]) {
 		case "build":
@@ -34,6 +43,10 @@ async function handlecli(arguments) {
 		case "deploy":
 			process.env.target = "prod";
 			await require('./deploy.js')();
+			break;
+		case "analyze":
+			process.env.target = "prod";
+			await require('./analyze.js')();
 			break;
 		case "logic":
 			process.env.target = "dev";

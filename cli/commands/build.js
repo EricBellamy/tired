@@ -15,7 +15,6 @@ const templateCache = (require('tired-disk-cache'))(".tired/cache/templates");
 
 // Sets the path that gets prepended to all images
 // process.env.BASE_IMAGE_PATH = "https://dev.tipsybartender.com";
-process.env.BASE_IMAGE_PATH = "https://img.tired.dev";
 
 function fileInStructureWasModified(filepath) {
 	// Check if the base filepath was modified

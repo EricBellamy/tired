@@ -12,6 +12,7 @@
 		"terser-sync": "^0.1.1",
 		"tired-disk-cache": "file:../cache",
 		"tired-format-attributes": "file:../format-attributes",
+		"tired-get-file-type": "file:../get-file-type",
 		"tired-markup": "file:../markup"
 	}
 }

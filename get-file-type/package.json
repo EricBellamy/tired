@@ -1,0 +1,9 @@
+{
+	"name": "tired-get-file-type",
+	"version": "1.0.0",
+	"description": "A helper for getting a filetype with or without the dot",
+	"main": "main.js",
+	"author": "ericbellamy",
+	"license": "No License",
+	"dependencies": {}
+}

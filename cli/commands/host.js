@@ -21,3 +21,8 @@ module.exports = async function (PORT_NUMBER) {
 		await launchServers(PORT_NUMBER);
 	});
 }
+
+module.exports.forTesting = async function (PORT_NUMBER, FORCE_BUILD = false) {
+	await build(FORCE_BUILD);
+	await launchServers(PORT_NUMBER);
+}

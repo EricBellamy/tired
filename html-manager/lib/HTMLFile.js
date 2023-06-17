@@ -23,6 +23,7 @@ module.exports = class HTMLFile {
 	loadNested(attributes, library) {
 		let includes = this.parsed.querySelectorAll("include");
 		let count = 0;
+		const keyAppearances = {};
 		while (0 < includes.length) {
 			for (const include of includes) {
 				// Get the library src
@@ -33,12 +34,20 @@ module.exports = class HTMLFile {
 				const requestedLibraryFile = library.getFile(src);
 				if (requestedLibraryFile === false) throw new Error(`No library file found for src: "${src}" in HTML file: "${this.path}"`);
 
+				const includeKey = include.getAttribute('key');
+				let keyCount = -1;
+				if (includeKey != undefined){
+					if(keyAppearances[includeKey] === undefined) keyAppearances[includeKey] = -1;
+					keyAppearances[includeKey]++;
+					keyCount = keyAppearances[includeKey];
+				}
+
 				// Compile the library file
 				const includeContents = requestedLibraryFile.compile(this.path, {
 					attr: include.attributes,
 					root: attributes.root,
 					template: attributes.template
-				}, library);
+				}, library, keyCount);
 
 				// Handle nested HTML library files
 				if (requestedLibraryFile.type === "html") {
@@ -105,7 +114,7 @@ module.exports = class HTMLFile {
 			const href = link.getAttribute("href");
 			try {
 				if (href[0] === '"') link.setAttribute("href", href.substring(1, href.length - 1));
-			} catch(err){
+			} catch (err) {
 				console.log(link.toString());
 				throw new Error(err);
 			}

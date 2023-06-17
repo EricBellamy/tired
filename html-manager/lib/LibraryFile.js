@@ -11,7 +11,7 @@ module.exports = class LibraryFile {
 		this.processor = fileProcessor.processor(this.type);
 		this.contents = fileProcessor.preprocess(path, type, contents);
 	}
-	compile(cachekey, attributes, library) {
+	compile(cachekey, attributes, library, appearanceNum) {
 		if (this.type === 'html') {
 			const processed = fileProcessor.process(this.path, 'html', this.contents, attributes);
 
@@ -22,7 +22,7 @@ module.exports = class LibraryFile {
 				fileProcessor.use(this.path, this.type);
 
 				// console.log(this.path);
-				if(this.processor.element) return this.processor.element(cachekey, this.path, attributes, this.contents);
+				if(this.processor.element) return this.processor.element(cachekey, this.path, attributes, this.contents, appearanceNum);
 				return this.contents;
 			} else return "";
 		}
