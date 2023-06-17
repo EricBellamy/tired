@@ -120,6 +120,9 @@ module.exports = class HTMLFile {
 			}
 		}
 
+		// Add a preconnect to our CDN domain
+		this.parsed.querySelector('head').insertAdjacentHTML("beforeend", `<link rel="preconnect" href="https://${global.tired_config.cdn.domain}">`);
+
 		includeCache.set(this.path, this.includedPaths);
 	}
 	saveFile() {
